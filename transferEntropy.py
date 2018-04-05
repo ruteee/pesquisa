@@ -93,6 +93,7 @@ def joint_probability(k,l, h, a, b):
         k B time horizon
         l A time horizon
         h instant in the future of serie B
+        
         a, b array type'''
 
     #Alarm Series A (cause), B (effect), same len
@@ -113,6 +114,7 @@ def joint_probability(k,l, h, a, b):
         for hl in np.arange(0,l):
                 a_prob_ind.append(a[i - hl])
 
+                     
         ab = [b[i + h]] + b_prob_ind + a_prob_ind 
         index_comb = combinations.index(ab)
         counting[index_comb] = counting[index_comb] + 1
