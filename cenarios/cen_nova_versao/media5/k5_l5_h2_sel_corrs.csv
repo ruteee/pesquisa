@@ -1,0 +1,13 @@
+,xmeas01_low,xmeas02_low,xmeas03_low,xmeas08_low,xmeas09_low,xmeas21_low,xmeas01_high,xmeas02_high,xmeas03_high,xmeas08_high,xmeas09_high,xmeas21_high
+xmeas01_low,0,0,0,0,0,1,0,0,0,0,0,1
+xmeas02_low,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas03_low,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas08_low,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas09_low,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas21_low,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas01_high,0,0,0,0,0,1,0,0,0,0,0,1
+xmeas02_high,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas03_high,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas08_high,0,0,0,0,0,0,0,0,0,0,0,0
+xmeas09_high,0,0,0,0,0,1,0,0,0,0,0,0
+xmeas21_high,0,0,0,0,0,0,0,0,0,0,0,0
