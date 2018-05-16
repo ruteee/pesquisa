@@ -1,2 +1,2 @@
-,tp_rate,fp_rate,precisao
-0,0.3333333333333333,0.0,1.0
+,tp_rate,fp_rate,precisao,fn_rate,total_error
+0,0.3333333333333333,0.0,1.0,0.6666666666666667,0.03333333333333333
