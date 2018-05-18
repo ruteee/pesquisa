@@ -35,4 +35,9 @@ def fn_rate(conf_df): #type 2 error
 def total_error(conf_df):
     return (conf_df['n']['Y'] + conf_df['p']['N'])/sum(conf_df.sum())
 
+def f1_score(conf_df):
+    tp = tp_rate(conf_df)
+    prec = precision(conf_df)
+    return ((2*tp*prec)/(tp+prec))
+
 
