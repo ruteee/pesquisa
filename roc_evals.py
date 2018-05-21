@@ -21,23 +21,39 @@ def generate_conf_df(df, df_ref):
 #roc fp*tp
 
 def fp_rate(conf_df): #type 1 - error
-    return conf_df["n"]["Y"]/(conf_df["n"]["Y"]+ conf_df["n"]["N"])
+    fp = 0
+    if conf_df["n"]["Y"] != 0:
+        fp = conf_df["n"]["Y"]/(conf_df["n"]["Y"]+ conf_df["n"]["N"])
+    return fp
 
 def tp_rate(conf_df): #since it is positive what are the odds of being classsified as positive - recall
-    return conf_df['p']['Y']/(conf_df['p']['Y'] + conf_df['p']['N'])
+    tp = 0
+    if conf_df['p']['Y'] !=0:
+        tp = conf_df['p']['Y']/(conf_df['p']['Y'] + conf_df['p']['N'])
+    return tp
 
 def precision(conf_df): #from those i choose as correct, how many really were
-    return conf_df['p']['Y']/(conf_df['p']['Y'] + conf_df['n']['Y'])
+    prec = 0
+    if conf_df['p']['Y'] != 0:
+        prec = conf_df['p']['Y']/(conf_df['p']['Y'] + conf_df['n']['Y'])
+    return prec
 
 def fn_rate(conf_df): #type 2 error
     return (1 - tp_rate(conf_df))
 
 def total_error(conf_df):
-    return (conf_df['n']['Y'] + conf_df['p']['N'])/sum(conf_df.sum())
+    te = 0
+    if (conf_df['n']['Y'] + conf_df['p']['N']) != 0:
+        te = (conf_df['n']['Y'] + conf_df['p']['N'])/sum(conf_df.sum())
+    return te
 
 def f1_score(conf_df):
     tp = tp_rate(conf_df)
     prec = precision(conf_df)
-    return ((2*tp*prec)/(tp+prec))
+    
+    f1 = 0
+    if tp != 0 and prec != 0:
+        f1 = ((2*tp*prec)/(tp+prec))
+    return f1
 
 

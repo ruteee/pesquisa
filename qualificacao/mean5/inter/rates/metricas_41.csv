@@ -1,0 +1,2 @@
+,tp_rate,fp_rate,precisao,fn_rate,total_error,f1_score
+0,0.5,0.008771929824561403,0.75,0.5,0.03333333333333333,0.6
