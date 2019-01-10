@@ -1,7 +1,7 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
-# In[49]:
+# In[1]:
 
 
 import copy
@@ -26,20 +26,38 @@ from scipy.ndimage import shift
 #import pydot
 
 
-# In[28]:
+from k2_alg import k2 
+from k2_alg import gen_clean_df
+
+from scikit_alarm_framework.alarm_generator import set_point
+
+
+# In[4]:
+
+
+#instalacao sckit alarm
+from getpass import getpass
+
+import os
+
+os.environ['GITHUB_AUTH'] = getpass('GitHub user') + ':' + getpass('GitHub password')
+get_ipython().system('pip -q install -e git+https://${GITHUB_AUTH}@github.com/abugim/scikit-alarm-framework.git@develop#egg=scikit-alarm-framework')
+
+
+# In[6]:
 
 
 # https://pypi.python.org/pypi/pydot
 get_ipython().system('pip install graphviz')
 
 
-# In[29]:
+# In[7]:
 
 
 get_ipython().system('pip install --upgrade pip')
 
 
-# In[30]:
+# In[5]:
 
 
 def get_lim_index(cdf, lim):
@@ -52,7 +70,7 @@ def get_lim_index(cdf, lim):
     return index 
 
 
-# In[2]:
+# In[8]:
 
 
 def surrogate(a):
@@ -79,7 +97,7 @@ def surrogate(a):
     return a_surr
 
 
-# In[3]:
+# In[9]:
 
 
 #Method using stats model kde to return transfer etnropy value limit. That is, the 'x' value corresponding to P95
@@ -102,7 +120,7 @@ def significance_test(k,l,h,sup_lim, n, a,b):
     return lvl_sig
 
 
-# In[4]:
+# In[10]:
 
 
 ##for paper test
@@ -135,7 +153,7 @@ def joint_probability_new(k,l,h, a, b, lbl_a, lbl_b):
     return prob_cnjt
 
 
-# In[5]:
+# In[11]:
 
 
 def joint_probability(k,l, h, a, b):
@@ -179,7 +197,7 @@ def joint_probability(k,l, h, a, b):
     return prob_cnjt
 
 
-# In[6]:
+# In[12]:
 
 
 #Joint probability evaluation p(i_t+h, i_t**k)
@@ -196,7 +214,7 @@ def joint_prob_ih_ik(k,l, joint_prob_ih_ik_jl):
     return p_jnt_ith_ik
 
 
-# In[7]:
+# In[13]:
 
 
 def conditional_prob(k,l,joint_prob):
@@ -219,7 +237,7 @@ def conditional_prob(k,l,joint_prob):
     return conditional
 
 
-# In[8]:
+# In[14]:
 
 
 #Division of the conditionals in log2 
@@ -234,7 +252,7 @@ def conditional_div(k,l,conditional_num, conditional_den):
     return conditional_division
 
 
-# In[9]:
+# In[15]:
 
 
 #Transfer entropy final evaluation
@@ -262,34 +280,47 @@ def te(k,l,h_window, a,b):
       te = np.sum(joint_p_ih_ik_jl[div!=0]*log2_div_cond)
       
       te_by_h.append(te)
+      
+     #adpatacao para calcular 20 minutos e 30 minutos de janela ao mesmo tempo
+      te_by_h33 = te_by_h[0:33]
       lag = np.argmax(te_by_h) + 1
-    return [max(te_by_h), lag]
+      lag33 = np.argmax(te_by_h33) + 1
+    return [max(te_by_h33), max(te_by_h),lag33, lag]
 
 
-# In[10]:
+# In[16]:
 
 
 def transferEntropy_case(dist_df, h, k, l):
-    #start = time.clock()
+    #start = time.clock()   
+    #------------adaptcao para retornar transentropy de meia hora e de 20 min---------
+    
+    transEntropy33 = np.zeros([dist_df.columns.size,dist_df.columns.size])
+    lagEntropy33 = np.zeros([dist_df.columns.size,dist_df.columns.size])
+    
     transEntropy = np.zeros([dist_df.columns.size,dist_df.columns.size])
     lagEntropy = np.zeros([dist_df.columns.size,dist_df.columns.size])
+    
     sigValues =  np.zeros([dist_df.columns.size,dist_df.columns.size])
     for i in np.arange(0, dist_df.columns.size):
         for j in np.arange(0, dist_df.columns.size):
             print('trans ', dist_df.columns[i], dist_df.columns[j])
             if(j != i + dist_df.columns.size/2 and j!=i and j != i - dist_df.columns.size/2):
                 te_result = te(k,l,h, dist_df[dist_df.columns[i]], dist_df[dist_df.columns[j]])
-                transEntropy[i][j] = te_result[0]
-                lagEntropy[i][j] = te_result[1]
+                transEntropy33[i][j] = te_result[0]
+                lagEntropy33[i][j] = te_result[2]
+                
+                transEntropy[i][j] = te_result[1]
+                lagEntropy[i][j] = te_result[3]
                 
             clear_output()
     #end = time.clock()   
     
     #print(end - start)
-    return [transEntropy, lagEntropy]  
+    return [transEntropy33, lagEntropy33, transEntropy,lagEntropy]  
 
 
-# In[11]:
+# In[17]:
 
 
 def apply_roll_mean(df, window):
@@ -300,25 +331,32 @@ def apply_roll_mean(df, window):
     return roll
 
 
-# In[12]:
+# In[18]:
 
 
 def graph_simple(df, eng = 'dot'):
     edge_style = ""
     g = Digraph(engine=eng)
-   
+    in_graph = []
     for k, row in enumerate(df.index):
-        if any(df.iloc[k]) or any(df[row]):
-            g.node(str(k),row, shape='oval', fontsize='10', width='0', style='filled', fillcolor='#c9c9c9', color="gray") 
+        if any(df.loc[row]):
+            g.node(str(row),row, shape='oval', fontsize='10', width='0', style='filled', fillcolor='#c9c9c9', color="gray")
+            in_graph.append(row)
+
+              
+    for c, col in enumerate(df.columns):
+        if any(df[col]):
+            if col not in in_graph:
+                g.node(str(col), col, shape='oval', fontsize='10', width='0', style='filled', fillcolor='#c9c9c9', color="gray") 
 
     for j, col in enumerate(df.columns):
-        for i, row in enumerate(df[col]):
-            if(row):
-                g.edge(str(i), str(j), label='',style= edge_style, color='dark')  
+        for i, row in enumerate(df.index):
+            if(df[col][i]):
+                g.edge(str(row), str(col), label=str(df.at[row,col]), style= edge_style, color='black')  
     return g 
 
 
-# In[13]:
+# In[19]:
 
 
 def graph(df, df_lag, eng = 'dot'):
@@ -337,7 +375,7 @@ def graph(df, df_lag, eng = 'dot'):
     return g 
 
 
-# In[14]:
+# In[20]:
 
 
 def graph_from_dict(dictionary, eng = 'dot'):
@@ -353,7 +391,7 @@ def graph_from_dict(dictionary, eng = 'dot'):
     return g 
 
 
-# In[15]:
+# In[21]:
 
 
 def generate_df_valid_corrs(df, limit):
@@ -366,7 +404,7 @@ def generate_df_valid_corrs(df, limit):
     return df_valid 
 
 
-# In[16]:
+# In[22]:
 
 
 def generate_df_max_info(df):
@@ -378,7 +416,7 @@ def generate_df_max_info(df):
     
 
 
-# In[17]:
+# In[23]:
 
 
 def apply_first_diff(df):
@@ -391,7 +429,7 @@ def apply_first_diff(df):
     return dist_diff
 
 
-# In[18]:
+# In[24]:
 
 
 def rm_smtc_cicle(df):
@@ -408,25 +446,24 @@ def rm_smtc_cicle(df):
                 
 
 
-# In[19]:
+# In[25]:
 
 
 def get_ancestrals(lista, node, lista_nova):
-    if np.all(np.unique(lista[node]) == ['x']):
-        return lista_nova
     
     if not node in lista_nova:
         lista_nova.extend([node])
             
-    if not lista[node]:
+    if not lista[node] or np.all(np.unique(lista[node]) == ['x']):
         return lista_nova
     else:
-        for i,no in enumerate(lista[node]):       
+        for i,no in enumerate(lista[node]): 
+            if no == 'x':
+                continue
             idx = no
             node_to_list = [lista[node][i]]
             lista[node][i] = 'x'
-            if no == 'x':
-                continue
+           
             if 'x' in lista[no]:
                 get_ancestrals(lista, idx, lista_nova)   
             elif not lista[no]:
@@ -440,7 +477,14 @@ def get_ancestrals(lista, node, lista_nova):
             return get_ancestrals(lista, node, lista_nova)
 
 
-# In[25]:
+# In[26]:
+
+
+lista= [[],[0],[0,1],[2]]
+get_ancestrals(lista, 2, [])
+
+
+# In[27]:
 
 
 def generate_aciclic_graph(grafo_param):
@@ -471,7 +515,7 @@ def generate_aciclic_graph(grafo_param):
     return grafo_ac
 
 
-# In[31]:
+# In[28]:
 
 
 def get_lags_ances(mat, idx, soma, lista_lags, ref):
@@ -488,44 +532,49 @@ def get_lags_ances(mat, idx, soma, lista_lags, ref):
                 get_lags_ances(mat, i, soma, lista_lags, ref)
                 
                 soma = 0
-
-           
     return lista_lags
- 
+        
+        
+    
 
-def get_lags_ances_df(mat,idx, soma, dict_lags, lista, dict_caminhos):
+
+# In[29]:
+
+
+def get_lags_ances_df(df, idx, soma, dict_lags, lista, dict_caminhos):
     lista.append(idx)
-    if np.all(mat[idx] == np.zeros(len(mat))):
+    if np.all(df[idx] == np.zeros(len(df))):
         return [dict_lags,dict_caminhos]
-    for i,dad_lag in enumerate(mat[idx]):
+    for i,dad_lag in enumerate(df[idx]):
         if dad_lag > 0:
           
             soma += dad_lag
             try:
-                dict_lags[mat.columns[i]].append(soma)
-                dict_caminhos[mat.columns[i]].append(lista)
+                dict_lags[df.columns[i]].append(soma)
+                dict_caminhos[df.columns[i]].append(lista)
             except:
-                dict_lags[mat.columns[i]] = [soma]
-                dict_caminhos[mat.columns[i]]= [lista]
+                dict_lags[df.columns[i]] = [soma]
+                dict_caminhos[df.columns[i]]= [lista]
         
-            get_lags_ances_df(mat, mat.columns[i], soma, dict_lags, lista[:], dict_caminhos)
+            get_lags_ances_df(df, df.columns[i], soma, dict_lags, lista[:], dict_caminhos)
             soma -= dad_lag
             
     return [dict_lags, dict_caminhos] 
 
 
+# In[30]:
 
 
-def get_all_shifts(nodes, mat):
+def get_all_shifts(nodes, df):
     dic = {}
     for node in nodes:
-        mat_cp = mat.copy()
+        df_cp = df.copy()
 #         if not np.all(mat_cp[node] == np.zeros(len(mat_cp))):
-        dic[node] = get_lags_ances_df(mat_cp, node, 0, {}, [],{})[0]
+        dic[node] = get_lags_ances_df(df_cp, node, 0, {}, [],{})[0]
     return dic
 
 
-# In[668]:
+# In[31]:
 
 
 
@@ -547,7 +596,7 @@ def gen_tree_from_lags(dici):
         
 
 
-# In[655]:
+# In[32]:
 
 
 def gen_df_iteration(df, node, dict_lag):
@@ -558,6 +607,47 @@ def gen_df_iteration(df, node, dict_lag):
                 df_gen[key_dad+"-"+str(i)+"_"+str(int(val))] = shift(df_gen[key_dad], int(val), order=0, mode='constant', cval=np.NaN)
     df_gen.dropna(inplace=True)
     return df_gen
+
+
+# In[33]:
+
+
+def apply_methodlogy(df_te, df_lag, dist,t,c):
+    
+    #aplicar threshold
+    te_vld = generate_df_valid_corrs(df_te, t)
+    #remover ciclos
+    te_vld_no_cycle = pd.DataFrame (data = generate_aciclic_graph(te_vld.values), columns=te_vld.columns, index=te_vld.columns)
+
+    #passar a utilizar o grafo de lags ao invés do de TE
+
+    te_vld__lags_no_cycle = df_lag[te_vld_no_cycle > 0].fillna(0)
+
+    #computar todos os ancestrais (comuns e virtuais)
+
+    dict_ancestors = get_all_shifts(te_vld__lags_no_cycle.columns, te_vld__lags_no_cycle)
+
+
+    #gerar arvore do k2
+    k2_tree = gen_tree_from_lags(dict_ancestors)
+
+    #gerar calcular k2
+
+    k2_result = k2(dist, k2_tree, te_vld__lags_no_cycle, c)
+
+    #reconstruir grafo
+
+    k2_rebuild = gen_clean_df(te_vld__lags_no_cycle, k2_result)
+
+    #trocar valores do k2 rebuild pelos lags corretos
+
+    graph_final = te_vld__lags_no_cycle[k2_rebuild>0].fillna(0)
+    return graph_final
+
+
+
+
+
 
 
 
