@@ -152,14 +152,14 @@ def f_mdl(df,x_i,pi, c):
     for j in np.arange(0,q_i):
       for i in np.arange(0,r_i):
         if Nijk[2*j + i] and Nij[j]:
-          pbs += Nijk[2*j + i]*(math.log(Nijk[2*j + i]) - math.log(Nij[j]))          
+          pbs += -(Nijk[2*j + i]*(math.log(Nijk[2*j + i]) - math.log(Nij[j])))          
         elif Nij[j]:
           pbs += - math.log(Nij[j])
-    pbs += -(c/2)*math.log(N)*q_i*(r_i -1)
+    pbs += (c/2)*math.log(N)*q_i*(r_i -1)
   else:
     for i in np.arange(0,r_i):
-      pbs += Nijk[i]*(math.log(Nijk[i]) - math.log(Nij))
-    pbs += -(c/2)*math.log(N)*(r_i -1)
+      pbs += -(Nijk[i]*(math.log(Nijk[i]) - math.log(Nij)))
+    pbs += (c/2)*math.log(N)*(r_i -1)
   
   return pbs
 
@@ -206,12 +206,12 @@ def k2(df_general, tree_ogn, df_lags, c):
 
       #f_ances = [f_ch(df, xi,parent) for parent in test_parents] if test_parents else [f_ch(df, xi, test_parents)]
       f_ances = [f_mdl(df, xi,parent,1) for parent in test_parents] if test_parents else [f_mdl(df, xi, test_parents,c)]
-      j_max = np.argmax(f_ances)
+      j_max = np.argmin(f_ances)
       
       if col == 'xmeas09_high':
         print('tree_xi ', tree_xi, '\n', 'j_max ', j_max )
       
-      sigma = f_ances[j_max]> pold
+      sigma = f_ances[j_max] < pold
       
       if col == 'xmeas09_high':
         print('sigma ', sigma, 'f_ances ',f_ances[j_max], 'pold ', pold)
