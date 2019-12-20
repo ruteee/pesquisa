@@ -198,30 +198,17 @@ def k2(df_general, tree_ogn, df_lags, c):
     
     f_ances = []
     while (True):
-      if col == 'xmeas09_high':
-        print('tree_xi ', tree_xi)
       test_parents = [parents[xi]+[ances] for ances in tree_xi] if tree_xi else []
-      if col == 'xmeas09_high':
-        print(test_parents)
 
       #f_ances = [f_ch(df, xi,parent) for parent in test_parents] if test_parents else [f_ch(df, xi, test_parents)]
       f_ances = [f_mdl(df, xi,parent,1) for parent in test_parents] if test_parents else [f_mdl(df, xi, test_parents,c)]
       j_max = np.argmax(f_ances)
-      
-      if col == 'xmeas09_high':
-        print('tree_xi ', tree_xi, '\n', 'j_max ', j_max )
-      
+
       sigma = f_ances[j_max]> pold
-      
-      if col == 'xmeas09_high':
-        print('sigma ', sigma, 'f_ances ',f_ances[j_max], 'pold ', pold)
         
       if sigma:
         parents[xi] = parents[xi] + [no for no in [tree_xi[j_max]] if no not in parents[xi]]
         pold = f_ances[j_max]
-        
-      if col == 'xmeas09_high':
-        print('parents ', parents[xi])
   
       if tree_xi:
         del tree_xi[j_max]
