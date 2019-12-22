@@ -201,7 +201,7 @@ def k2(df_general, tree_ogn, df_lags, c):
       test_parents = [parents[xi]+[ances] for ances in tree_xi] if tree_xi else []
 
       #f_ances = [f_ch(df, xi,parent) for parent in test_parents] if test_parents else [f_ch(df, xi, test_parents)]
-      f_ances = [f_mdl(df, xi,parent,1) for parent in test_parents] if test_parents else [f_mdl(df, xi, test_parents,c)]
+      f_ances = [f_mdl(df, xi,parent,c) for parent in test_parents] if test_parents else [f_mdl(df, xi, test_parents,c)]
       j_max = np.argmax(f_ances)
 
       sigma = f_ances[j_max]> pold
