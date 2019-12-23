@@ -28,6 +28,7 @@ from scipy.ndimage import shift
 
 from k2_alg import k2 
 from k2_alg import gen_clean_df
+# from k2_alg import *
 
 from scikit_alarm_framework.alarm_generator import set_point
 
@@ -633,11 +634,11 @@ def apply_methodlogy(df_te, df_lag, dist,t,c):
 
     #gerar calcular k2
 
-    k2_result = k2(dist, k2_tree, te_vld__lags_no_cycle, c)
+    k2_result = k2_alg.k2(dist, k2_tree, te_vld__lags_no_cycle, c)
 
     #reconstruir grafo
 
-    k2_rebuild = gen_clean_df(te_vld__lags_no_cycle, k2_result)
+    k2_rebuild = k2_alg.gen_clean_df(te_vld__lags_no_cycle, k2_result)
 
     #trocar valores do k2 rebuild pelos lags corretos
 

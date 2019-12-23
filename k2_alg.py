@@ -18,7 +18,7 @@ import itertools
 
 from graphviz import Digraph
 
-import TransEntropy_mod as te
+import TransEntropy_mod as te_mod
 
 def graph_simple(df, eng = 'dot'):
     edge_style = ""
@@ -170,13 +170,13 @@ def k2(df_general, tree_ogn, df_lags, c):
   
   sigma = 0
    
-  dict_lags = te.get_all_shifts(df_lags.columns, df_lags.copy())
+  dict_lags = te_mod.get_all_shifts(df_lags.columns, df_lags.copy())
   nodes = []
   
   dfs_list = []
   
   for col in df_general.columns:
-    dfs_list.append(te.gen_df_iteration(df_general, col, dict_lags))
+    dfs_list.append(te_mod.gen_df_iteration(df_general, col, dict_lags))
   
     
     
@@ -265,7 +265,7 @@ def gen_clean_df(df_lags, k2_return):
 
   for key, values in k2_return.items():
     node_son = key
-    lista_son = te. get_lags_ances_df(df_lags, node_son,0, {}, [], {})[1]
+    lista_son = te_mod.get_lags_ances_df(df_lags, node_son,0, {}, [], {})[1]
 
     for node in values:
       split_name = node.split('-')
