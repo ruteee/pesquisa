@@ -1,5 +1,5 @@
 digraph {
-	margin=0 ratio=fill size="3,3"
+	margin=0 ratio=fill
 	x01_high [label=x01_high color=black fillcolor=white fontsize=10 shape=oval style=filled width=0]
 	x07_high [label=x07_high color=black fillcolor=white fontsize=10 shape=oval style=filled width=0]
 	x08_high [label=x08_high color=black fillcolor=white fontsize=10 shape=oval style=filled width=0]
